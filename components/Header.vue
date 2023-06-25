@@ -3,8 +3,7 @@ import { Bell, UserFilled } from "@element-plus/icons-vue";
 import { useRoute, useRouter } from "vue-router";
 const route = useRoute();
 const router = useRouter();
-const {signOut,data} = useAuth()
-console.log(data.value)
+const {signOut} = useAuth()
 const buttons = [
   {
     text: "Profil",

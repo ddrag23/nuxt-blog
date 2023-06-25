@@ -9,6 +9,22 @@ export default NuxtAuthHandler({
   session:{
     strategy :'jwt'
   },
+  callbacks:{
+    jwt: async ({token, user}:any) => {
+      const isSignIn = user ? true : false;
+      if (isSignIn) {
+        token.id = user ? user.id || '' : '';
+        token.role = user ? (user as any).role || '' : '';
+      }
+      return Promise.resolve(token);
+    },
+    // Callback whenever session is checked, see https://next-auth.js.org/configuration/callbacks#session-callback
+    session: async ({session, token} :any) => {
+      (session as any).user.role = token.role;
+      (session as any).user.uid = token.id;
+      return Promise.resolve(session);
+    },
+  },
   // TODO: ADD YOUR OWN AUTHENTICATION PROVIDER HERE, READ THE DOCS FOR MORE: https://sidebase.io/nuxt-auth
   providers: [
     // @ts-expect-error You need to use .default here for it to work during SSR. May be fixed via Vite at some point
@@ -24,6 +40,7 @@ export default NuxtAuthHandler({
         password: { label: 'Password', type: 'password', placeholder: '(hint: hunter2)' }
       },
 
+
       async authorize (credentials: any) : Promise<Object> {
         console.warn('ATTENTION: You should replace this with your real providers or credential provider logic! The current setup is not safe')
         // You need to provide your own logic here that takes the credentials
@@ -33,7 +50,7 @@ export default NuxtAuthHandler({
         console.log(credentials)
         const user = await prisma.user.findUnique({where:{
           email : credentials.email
-        }})
+        },include:{role : true}})
 
         // if (userError) {
         //   throw new Error("Username yang anda masukkan salah")
@@ -53,7 +70,12 @@ export default NuxtAuthHandler({
             statusMessage: "Password yang anda masukkan salah",
           });
         }
-        return user;
+        return {
+          name : user.name,
+          id : user.id,
+          email:user.email,
+          role : user.role.name
+        };
 
       }
     })
