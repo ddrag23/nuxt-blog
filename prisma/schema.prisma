@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // NOTE: You probably want to change this to another database later on
+  provider = "postgresql"
+
+  // This value is read from the .env file.
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  email String @unique
+  name String
+  password String
+  profile Profile?
+  posts   Post[]
+  role Roles @relation(fields: [role_id],references: [id])
+  role_id Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Roles{
+  id Int @id @default(autoincrement())
+  name String
+  users User[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Profile {
+  id     Int     @id @default(autoincrement())
+  bio    String?
+  alamat String? @db.Text
+  no_hp  String
+  user   User    @relation(fields: [user_id], references: [id])
+  user_id Int     @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  category_name String
+  post Post[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(255)
+  content   String?  @db.Text
+  published Boolean  @default(false)
+  author    User     @relation(fields: [author_id], references: [id])
+  author_id  Int
+  category Category @relation(fields: [category_id],references: [id])
+  category_id Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+
+
